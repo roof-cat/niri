@@ -862,7 +862,7 @@ impl<W: LayoutElement> Tile<W> {
 
         if self.is_in_input_region(point) {
             let win_pos = self.buf_loc() + offset;
-            Some(HitType::Input { win_pos })
+            Some(HitType::Input { win_pos, win_point: point })
         } else if self.is_in_activation_region(point) {
             Some(HitType::Activate {
                 is_tab_indicator: false,

@@ -484,6 +484,8 @@ pub enum HitType {
     Input {
         /// Position of the window's buffer.
         win_pos: Point<f64, Logical>,
+        /// Position within the window's visual geometry.
+        win_point: Point<f64, Logical>,
     },
     /// The hit can activate a window, but it is not in the input region so cannot send events.
     ///
@@ -571,8 +573,15 @@ impl ActivateWindow {
 impl HitType {
     pub fn offset_win_pos(mut self, offset: Point<f64, Logical>) -> Self {
         match &mut self {
-            HitType::Input { win_pos } => *win_pos += offset,
+            HitType::Input { win_pos, .. } => *win_pos += offset,
             HitType::Activate { .. } => (),
+        }
+        self
+    }
+
+    pub fn with_win_point(mut self, win_point: Point<f64, Logical>) -> Self {
+        if let HitType::Input { win_point: ref mut point, .. } = &mut self {
+            *point = win_point;
         }
         self
     }
@@ -584,7 +593,7 @@ impl HitType {
     ) -> Option<(&W, Self)> {
         let pos_within_tile = point - tile_pos;
         tile.hit(pos_within_tile)
-            .map(|hit| (tile.window(), hit.offset_win_pos(tile_pos)))
+            .map(|hit| (tile.window(), hit.offset_win_pos(tile_pos).with_win_point(pos_within_tile)))
     }
 
     pub fn to_activate(self) -> Self {

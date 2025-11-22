@@ -3506,7 +3506,7 @@ impl Niri {
 
         let mapped_hit_data = |(mapped, hit): (&Mapped, HitType)| {
             let window = &mapped.window;
-            let surface_and_pos = if let HitType::Input { win_pos } = hit {
+            let surface_and_pos = if let HitType::Input { win_pos, .. } = hit {
                 let win_pos_within_output = win_pos;
                 window
                     .surface_under(

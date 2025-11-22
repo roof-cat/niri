@@ -41,7 +41,7 @@ use self::move_grab::MoveGrab;
 use self::resize_grab::ResizeGrab;
 use self::spatial_movement_grab::SpatialMovementGrab;
 use crate::layout::scrolling::ScrollDirection;
-use crate::layout::{ActivateWindow, LayoutElement as _};
+use crate::layout::{ActivateWindow, HitType, LayoutElement as _};
 use crate::niri::{CastTarget, PointerVisibility, State};
 use crate::ui::screenshot_ui::ScreenshotUi;
 use crate::utils::spawning::{spawn, spawn_sh};
@@ -2600,6 +2600,35 @@ impl State {
                         // Don't activate the window under the cursor to avoid unnecessary
                         // scrolling when e.g. Mod+MMB clicking on a partially off-screen window.
                         return;
+                    }
+                }
+            }
+
+            // Check for double-click on titlebar (activation region or top of input region).
+            let pos = pointer.current_location();
+            if let Some((output, pos_within_output)) = self.niri.output_under(pos) {
+                if let Some((mapped_id, hit)) = self.niri.layout.window_under(output, pos_within_output) {
+                    let is_titlebar = match hit {
+                        HitType::Activate { .. } => true,
+                        HitType::Input { win_point, .. } => {
+                            // For CSD windows, consider top 50px as titlebar.
+                            win_point.y < 50.
+                        }
+                    };
+                    if is_titlebar {
+                        if button == Some(MouseButton::Left) && !pointer.is_grabbed() {
+                            let time = get_monotonic_time();
+                            let last_click = mapped_id.last_titlebar_click.get();
+                            let is_double_click = if let Some(last_time) = last_click {
+                                time.saturating_sub(last_time) <= DOUBLE_CLICK_TIME
+                            } else {
+                                false
+                            };
+                            mapped_id.last_titlebar_click.set(Some(time));
+                            if is_double_click {
+                                self.do_action(Action::MaximizeColumn, false);
+                            }
+                        }
                     }
                 }
             }

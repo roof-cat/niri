@@ -333,6 +333,7 @@ impl<W: LayoutElement> FloatingSpace<W> {
 
             let layout = WindowLayout {
                 tile_pos_in_workspace_view: Some(pos.into()),
+                window_pos_on_screen: None, // Will be filled in at a higher level with screen position
                 ..tile.ipc_layout_template()
             };
             (tile, layout)

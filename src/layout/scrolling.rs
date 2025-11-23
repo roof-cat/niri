@@ -1,4 +1,4 @@
-use std::cmp::{max, min};
+ use std::cmp::{max, min};
 use std::iter::{self, zip};
 use std::rc::Rc;
 use std::time::Duration;
@@ -2419,10 +2419,13 @@ impl<W: LayoutElement> ScrollingSpace<W> {
             .iter()
             .enumerate()
             .flat_map(move |(col_idx, col)| {
-                col.tiles().enumerate().map(move |(tile_idx, (tile, _))| {
+                let col_x = self.column_x(col_idx);
+                col.tiles().enumerate().map(move |(tile_idx, (tile, pos))| {
                     let layout = WindowLayout {
                         // Our indices are 1-based, consistent with the actions.
                         pos_in_scrolling_layout: Some((col_idx + 1, tile_idx + 1)),
+                        // Calculate exact position: column x position + tile position within column
+                        window_pos_on_screen: Some((col_x + pos.x - self.view_pos(), pos.y)),
                         ..tile.ipc_layout_template()
                     };
                     (tile, layout)

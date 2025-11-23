@@ -677,6 +677,7 @@ fn print_window(window: &Window) {
         window_size,
         tile_pos_in_workspace_view,
         window_offset_in_tile,
+        window_pos_on_screen,
     } = window.layout;
 
     println!("  Layout:");
@@ -704,6 +705,13 @@ fn print_window(window: &Window) {
         fmt_rounded(window_offset_in_tile.0),
         fmt_rounded(window_offset_in_tile.1)
     );
+    if let Some(pos) = window_pos_on_screen {
+        println!(
+            "    Window position on screen: {}, {}",
+            fmt_rounded(pos.0),
+            fmt_rounded(pos.1)
+        );
+    }
 }
 
 fn fmt_rounded(x: f64) -> String {

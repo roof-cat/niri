@@ -4396,8 +4396,13 @@ fn should_intercept_key<'a>(
             if is_inhibiting_shortcuts && bind.allow_inhibiting {
                 ShouldInterceptResult::Forward
             } else if modified.is_modifier_key() {
+                suppressed_keys.insert(key_code);
                 if bind.release {
-                    ShouldInterceptResult::Forward
+                    // If this is a release bind it should still be intercepted. This does mean it
+                    // can be intercepted and then not end up being part of a real bind, but that's
+                    // very much an edge case and better than failing to intercept a keystroke that
+                    // a user intended to invoke a bind.
+                    ShouldInterceptResult::InterceptOnly
                 } else {
                     ShouldInterceptResult::ForwardAndHandle(bind)
                 }
@@ -4523,6 +4528,9 @@ fn find_configured_bind<'a>(
     }
 
     for bind in bindings {
+        // Skip if this is a release bind during a press event or a regular bind during a release event
+        // On a press event (pressed=true): skip release binds (bind.release=true)
+        // On a release event (pressed=false): skip regular binds (bind.release=false)
         if bind.release == pressed {
             continue;
         }

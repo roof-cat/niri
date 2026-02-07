@@ -20,7 +20,7 @@ use smithay::backend::input::{
 };
 use smithay::backend::libinput::LibinputInputBackend;
 use smithay::input::dnd::DnDGrab;
-use smithay::input::keyboard::{keysyms, FilterResult, Keysym, Layout, ModifiersState};
+use smithay::input::keyboard::{keysyms, Keysym, Layout, ModifiersState};
 use smithay::input::pointer::{
     AxisFrame, ButtonEvent, CursorIcon, CursorImageStatus, Focus, GestureHoldBeginEvent,
     GestureHoldEndEvent, GesturePinchBeginEvent, GesturePinchEndEvent, GesturePinchUpdateEvent,
@@ -4477,13 +4477,8 @@ fn should_intercept_key<'a>(
             if is_inhibiting_shortcuts && bind.allow_inhibiting {
                 ShouldInterceptResult::Forward
             } else if modified.is_modifier_key() {
-                suppressed_keys.insert(key_code);
                 if bind.release {
-                    // If this is a release bind it should still be intercepted. This does mean it
-                    // can be intercepted and then not end up being part of a real bind, but that's
-                    // very much an edge case and better than failing to intercept a keystroke that
-                    // a user intended to invoke a bind.
-                    ShouldInterceptResult::InterceptOnly
+                    ShouldInterceptResult::Forward
                 } else {
                     ShouldInterceptResult::ForwardAndHandle(bind)
                 }

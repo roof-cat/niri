@@ -39,6 +39,10 @@ static GLOBAL: tracy_client::ProfiledAllocator<std::alloc::System> =
     tracy_client::ProfiledAllocator::new(std::alloc::System, 100);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    unsafe {
+        libc::setlocale(libc::LC_ALL, b"\0".as_ptr().cast());
+    }
+
     // Set backtrace defaults if not set.
     if env::var_os("RUST_BACKTRACE").is_none() {
         env::set_var("RUST_BACKTRACE", "1");
